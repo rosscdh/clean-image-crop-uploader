@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from PIL import Image
+from urlparse import urlparse
 from .models import UploadedFile
 
 
@@ -48,7 +49,12 @@ class CicuUploaderInput(forms.ClearableFileInput):
     def render(self, name, value, attrs=None):
         attrs = attrs or {}
         if value:
-            filename = u'%s%s' % (settings.MEDIA_URL, value)
+            url = urlparse(value)
+            if url.scheme in [None, '']:
+                filename = u'%s%s' % (settings.MEDIA_URL, value)
+            else:
+                # we have a full url that has been passed in
+                filename = u'%s' % (value,)
         else:
             filename = ''
         attrs.update({
